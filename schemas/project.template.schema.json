@@ -68,6 +68,11 @@
       "type": "boolean",
       "description": "When true, hidden/internal services (AdService, Chat, HttpService, etc.) are ignored during sync. Only visible services like Workspace, ReplicatedStorage, ServerScriptService are synced. Defaults to true."
     },
+    "fileLogLevel": {
+      "type": "string",
+      "enum": ["trace", "debug", "info", "warn", "error", "none"],
+      "description": "Controls the log level for file-based logging to .atlas/logs/. Defaults to 'trace'. Set to 'none' to disable file logging entirely."
+    },
     "tree": {
       "if": {
         "properties": {
