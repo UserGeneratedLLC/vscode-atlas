@@ -8,7 +8,7 @@ import path = require("path")
 const exec = promisify(childProcess.exec)
 
 export enum InstallType {
-  rokit = "Rokit",
+  npm = "npm",
   global = "global",
 }
 export type RojoInstall = {
@@ -24,8 +24,13 @@ type ExecError = {
 }
 
 function getInstallType(resolvedPath: string) {
-  if (resolvedPath.includes(".rokit")) {
-    return InstallType.rokit
+  if (
+    resolvedPath.includes("node_modules") ||
+    resolvedPath.includes("npm") ||
+    resolvedPath.includes("nvm") ||
+    resolvedPath.includes("fnm")
+  ) {
+    return InstallType.npm
   }
 
   return InstallType.global
@@ -69,10 +74,6 @@ export async function getRojoInstall(
       resolvedPath,
     }
   } else {
-    if (outputResult.error.stderr.includes("rokit")) {
-      return null
-    }
-
     return Promise.reject(
       outputResult.error.stderr || outputResult.error.stdout,
     )

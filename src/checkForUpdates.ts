@@ -6,6 +6,7 @@ import { isAtlasPluginInstalled } from "./installPlugin"
 
 const exec = promisify(childProcess.exec)
 
+const NPM_PACKAGE = "@usergeneratedllc/atlas"
 const ONE_DAY = 24 * 60 * 60 * 1000
 
 export async function checkForAtlasUpdates(
@@ -14,48 +15,47 @@ export async function checkForAtlasUpdates(
   const lastCheck = context.globalState.get<number>("atlas::lastUpdateCheck")
   if (lastCheck && Date.now() - lastCheck < ONE_DAY) return
 
-  const rokitPath = await which("rokit").catch(() => null)
-  if (!rokitPath) return
+  const npmPath = await which("npm").catch(() => null)
+  if (!npmPath) return
 
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+  let updateAvailable = false
+  let currentVersion = ""
+  let latestVersion = ""
 
-  let checkOutput: string | null = null
-  let updateScope: "project" | "global" = "global"
-
-  if (workspaceFolder) {
-    try {
-      const result = await exec("rokit update atlas --check", {
-        cwd: workspaceFolder,
-      })
-      const output = (result.stdout + result.stderr).trim()
-      if (output && !output.toLowerCase().includes("up to date")) {
-        checkOutput = output
-        updateScope = "project"
+  try {
+    const result = await exec(`npm outdated -g ${NPM_PACKAGE} --json`)
+    const output = result.stdout.trim()
+    if (output) {
+      const data = JSON.parse(output)
+      const info = data[NPM_PACKAGE]
+      if (info && info.current !== info.latest) {
+        updateAvailable = true
+        currentVersion = info.current
+        latestVersion = info.latest
       }
-    } catch {
-      // atlas not in project rokit.toml -- fall through
     }
-  }
-
-  if (!checkOutput) {
-    try {
-      const result = await exec("rokit update --global atlas --check")
-      const output = (result.stdout + result.stderr).trim()
-      if (output && !output.toLowerCase().includes("up to date")) {
-        checkOutput = output
-        updateScope = "global"
+  } catch (e: any) {
+    if (e.stdout) {
+      try {
+        const data = JSON.parse(e.stdout)
+        const info = data[NPM_PACKAGE]
+        if (info && info.current !== info.latest) {
+          updateAvailable = true
+          currentVersion = info.current
+          latestVersion = info.latest
+        }
+      } catch {
+        // not parseable, ignore
       }
-    } catch {
-      // atlas not installed globally via rokit
     }
   }
 
   context.globalState.update("atlas::lastUpdateCheck", Date.now())
 
-  if (!checkOutput) return
+  if (!updateAvailable) return
 
   const choice = await vscode.window.showInformationMessage(
-    `An Atlas update is available. ${checkOutput}`,
+    `An Atlas update is available: ${currentVersion} → ${latestVersion}`,
     "Update",
     "Dismiss",
   )
@@ -69,11 +69,7 @@ export async function checkForAtlasUpdates(
     },
     async (progress) => {
       try {
-        if (updateScope === "project" && workspaceFolder) {
-          await exec("rokit update atlas", { cwd: workspaceFolder })
-        } else {
-          await exec("rokit update --global atlas")
-        }
+        await exec(`npm update -g ${NPM_PACKAGE}`)
       } catch (e: any) {
         vscode.window.showErrorMessage(
           `Could not update Atlas: ${e.stderr || e}`,

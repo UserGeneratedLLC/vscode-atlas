@@ -1,6 +1,6 @@
 # Atlas for VS Code
 
-Integrates [Atlas](https://github.com/UserGeneratedLLC/rojo) natively with VS Code, with full support for `.project.json5`, `.meta.json5`, and `.model.json5` files.
+Integrates [Atlas](https://github.com/UserGeneratedLLC/atlas) natively with VS Code, with full support for `.project.json5`, `.meta.json5`, and `.model.json5` files.
 
 All actions are performed via the Atlas menu. To open the Atlas menu, either:
 
@@ -17,9 +17,9 @@ Atlas includes these recommended extensions as part of its extension pack:
 - **[Luau Language Server](https://marketplace.visualstudio.com/items?itemName=JohnnyMorganz.luau-lsp)** -- Full Luau language support with autocomplete, diagnostics, and type checking
 - **[StyLua](https://marketplace.visualstudio.com/items?itemName=JohnnyMorganz.stylua)** -- Luau/Lua code formatter
 
-## Automatic installation
+## Installation
 
-If you do not have Atlas installed, the extension will ask you if you want it to be automatically installed for you. If you do, it will be installed via [Rokit](https://github.com/rojo-rbx/rokit), a toolchain manager. This will create a `rokit.toml` file in your project directory, which will pin the current version of Atlas in your project.
+Atlas is installed via npm. See the [README](https://github.com/UserGeneratedLLC/atlas#readme) for installation instructions.
 
 You must click "Install Roblox Studio plugin" at least once if you want to live-sync from Studio!
 

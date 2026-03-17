@@ -1,45 +1,10 @@
 import * as childProcess from "child_process"
-import * as fs from "fs/promises"
-import * as os from "os"
 import * as path from "path"
 import { promisify } from "util"
 import * as vscode from "vscode"
 
 const exec = promisify(childProcess.exec)
 
-async function elevatedDelete(filePath: string): Promise<void> {
-  try {
-    await fs.unlink(filePath)
-    return
-  } catch (e: any) {
-    if (e.code === "EBUSY") {
-      throw new Error(
-        `The file "${filePath}" is locked by a running process. ` +
-          `Please stop any running Atlas sessions first, then try again.`,
-      )
-    }
-    if (e.code !== "EPERM" && e.code !== "EACCES") {
-      throw e
-    }
-  }
-
-  const platform = os.platform()
-  const escaped = filePath.replace(/"/g, '\\"')
-
-  let cmd: string
-  if (platform === "win32") {
-    cmd =
-      `powershell -Command "Start-Process powershell ` +
-      `-ArgumentList '-Command Remove-Item \\\"${escaped}\\\" -Force' ` +
-      `-Verb RunAs -Wait"`
-  } else if (platform === "darwin") {
-    cmd = `osascript -e 'do shell script "rm -f \\"${escaped}\\"" with administrator privileges'`
-  } else {
-    cmd = `pkexec rm -f "${escaped}"`
-  }
-
-  await exec(cmd)
-}
 import { buildProject } from "../buildProject"
 import { createProjectFile } from "../createProjectFile"
 import { State } from "../extension"
@@ -146,7 +111,7 @@ const rojoNotInstalled = [
   },
   {
     label: "$(desktop-download) Install Atlas now",
-    detail: "Click here to download and install Atlas (the underlying tool).",
+    detail: "Install Atlas via npm (requires Node.js).",
     action: "install",
   },
 ]
@@ -181,56 +146,6 @@ function getInstallDetail(
   }
 
   return `Atlas is managed by ${installType}`
-}
-
-let rokitMessageSent = false
-
-function showSwitchMessage(install: RojoInstall) {
-  const installType = install.installType
-
-  // Tell the user about Rokit once per session
-  if (installType !== InstallType.rokit && !rokitMessageSent) {
-    rokitMessageSent = true
-
-    vscode.window
-      .showInformationMessage(
-        `${getInstallDetail(
-          installType,
-          false,
-        )} You should consider using Rokit instead to manage your toolchains.` +
-          " Rokit is a toolchain manager that enables installing project-specific command line tools and switching between them seamlessly.",
-        "Switch to Rokit",
-      )
-      .then((response) => {
-        if (!response) {
-          return
-        }
-
-        vscode.window
-          .showWarningMessage(
-            `This will delete the atlas executable in your path from ${install.resolvedPath}.` +
-              ` After that, we will prompt you to install Atlas with Rokit. Is this OK?`,
-            "Yes",
-            "No",
-          )
-          .then(async (answer) => {
-            if (answer !== "Yes") {
-              return
-            }
-
-            rokitMessageSent = false
-
-            try {
-              await elevatedDelete(install.resolvedPath)
-              vscode.commands.executeCommand("vscode-atlas.openMenu")
-            } catch (e) {
-              vscode.window.showErrorMessage(
-                `Could not delete atlas executable: ${e}`,
-              )
-            }
-          })
-      })
-  }
 }
 
 async function handleInstallError(error: string) {
@@ -273,8 +188,6 @@ async function generateProjectMenu(
         } else if (installType !== install.installType) {
           mixed = true
         }
-
-        showSwitchMessage(install)
       }
 
       projectFileRojoVersions.set(projectFile, install ? install.version : null)
@@ -424,16 +337,12 @@ async function generateProjectMenu(
       action: "installPlugin",
       projectFile: projectFiles[0],
     },
-    ...(installType === InstallType.rokit
-      ? [
-          {
-            label: "$(sync) Check for Updates",
-            description: `Atlas v${allRojoVersions[0]}`,
-            action: "checkUpdates",
-            projectFile: projectFiles[0],
-          },
-        ]
-      : []),
+    {
+      label: "$(sync) Check for Updates",
+      description: `Atlas v${allRojoVersions[0]}`,
+      action: "checkUpdates",
+      projectFile: projectFiles[0],
+    },
     {
       label: "―――――――――――― Projects ―――――――――――",
       info: true,
@@ -756,25 +665,20 @@ export const openMenuCommand = (state: State) =>
           installRojo(folder)
             .then(() => {
               vscode.window.showInformationMessage(
-                "Successfully installed Rojo with Rokit! Atlas is ready to use.",
+                "Atlas installed successfully and is ready to use.",
               )
 
               vscode.commands.executeCommand("vscode-atlas.openMenu")
             })
             .catch((e) => {
               vscode.window.showErrorMessage(
-                `Couldn't install Rojo with Rokit: ${e}`,
+                `Could not install Atlas: ${e}`,
               )
             })
 
           break
         }
         case "checkUpdates": {
-          if (!selectedItem.projectFile) return
-          const updateFolder = path.dirname(
-            selectedItem.projectFile.path.fsPath,
-          )
-
           input.hide()
 
           await vscode.window.withProgress(
@@ -785,20 +689,15 @@ export const openMenuCommand = (state: State) =>
             async (progress) => {
               let updateOutput: string
               try {
-                const r = await exec("rokit update atlas", {
-                  cwd: updateFolder,
-                })
+                const r = await exec(
+                  "npm update -g @usergeneratedllc/atlas",
+                )
                 updateOutput = r.stdout || r.stderr
-              } catch {
-                try {
-                  const r = await exec("rokit update --global atlas")
-                  updateOutput = r.stdout || r.stderr
-                } catch (e: any) {
-                  vscode.window.showErrorMessage(
-                    `Could not update Atlas: ${e.stderr || e}`,
-                  )
-                  return
-                }
+              } catch (e: any) {
+                vscode.window.showErrorMessage(
+                  `Could not update Atlas: ${e.stderr || e}`,
+                )
+                return
               }
 
               if (isAtlasPluginInstalled()) {
