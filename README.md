@@ -40,7 +40,7 @@ All file types have full JSON schema validation and IntelliSense via the bundled
 ## Help
 
 - Read the [Atlas docs](https://rojo.space/docs/v7/)
-- [Open an issue](https://github.com/UserGeneratedLLC/vscode-rojo/issues) on the project repo
+- [Open an issue](https://github.com/UserGeneratedLLC/vscode-atlas/issues) on the project repo
 
 ## Supported platforms
 

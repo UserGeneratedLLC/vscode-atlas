@@ -3,7 +3,7 @@
   "displayName": "Atlas - Connecting AI Agents to Roblox Studio",
   "description": "Atlas for VS Code",
   "version": "2.2.2",
-  "repository": "https://github.com/UserGeneratedLLC/vscode-rojo",
+  "repository": "https://github.com/UserGeneratedLLC/vscode-atlas",
   "publisher": "UserGeneratedLLC",
   "engines": {
     "vscode": "^1.63.0"
