@@ -26,9 +26,7 @@ export async function installRojo(folder: string) {
         )
 
         if (choice === "Open nodejs.org") {
-          vscode.env.openExternal(
-            vscode.Uri.parse("https://nodejs.org/"),
-          )
+          vscode.env.openExternal(vscode.Uri.parse("https://nodejs.org/"))
         }
 
         return

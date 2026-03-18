@@ -671,9 +671,7 @@ export const openMenuCommand = (state: State) =>
               vscode.commands.executeCommand("vscode-atlas.openMenu")
             })
             .catch((e) => {
-              vscode.window.showErrorMessage(
-                `Could not install Atlas: ${e}`,
-              )
+              vscode.window.showErrorMessage(`Could not install Atlas: ${e}`)
             })
 
           break
@@ -689,9 +687,7 @@ export const openMenuCommand = (state: State) =>
             async (progress) => {
               let updateOutput: string
               try {
-                const r = await exec(
-                  "npm update -g @usergeneratedllc/atlas",
-                )
+                const r = await exec("npm update -g @usergeneratedllc/atlas")
                 updateOutput = r.stdout || r.stderr
               } catch (e: any) {
                 vscode.window.showErrorMessage(
