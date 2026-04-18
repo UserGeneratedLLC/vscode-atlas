@@ -272,6 +272,11 @@
         "warnDuplicateNames": {
           "type": "boolean",
           "description": "Whether to emit warnings for duplicate child names (case-insensitive) during syncback. Duplicates are skipped. Defaults to false."
+        },
+        "packPaths": {
+          "type": "array",
+          "description": "Glob patterns (relative to the project folder) whose matched directory subtrees are written as a single .rbxm binary model. Only applied when the subtree contains no scripts (any LuaSourceContainer descendant disables packing). Designed for asset-heavy directories where per-file overhead dominates.",
+          "items": { "type": "string" }
         }
       }
     },
