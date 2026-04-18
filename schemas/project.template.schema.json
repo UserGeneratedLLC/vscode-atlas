@@ -50,6 +50,13 @@
         "type": "string"
       }
     },
+    "globAllowPaths": {
+      "type": "array",
+      "description": "Glob patterns, relative to the project file, that rescue files matched by globIgnorePaths. Useful for narrow allow-listing inside a broadly ignored directory (gitignore-style negation).",
+      "items": {
+        "type": "string"
+      }
+    },
     "syncbackRules": {
       "$ref": "#/$defs/syncbackRules"
     },
