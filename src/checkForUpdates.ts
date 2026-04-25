@@ -1,7 +1,7 @@
 import * as childProcess from "child_process"
 import { promisify } from "util"
 import * as vscode from "vscode"
-import * as which from "which"
+import which from "which"
 import { isAtlasPluginInstalled } from "./installPlugin"
 
 const exec = promisify(childProcess.exec)
@@ -69,7 +69,7 @@ export async function checkForAtlasUpdates(
     },
     async (progress) => {
       try {
-        await exec(`npm update -g ${NPM_PACKAGE}`)
+        await exec(`npm install -g ${NPM_PACKAGE}@latest --no-audit --no-fund`)
       } catch (e: any) {
         vscode.window.showErrorMessage(
           `Could not update Atlas: ${e.stderr || e}`,

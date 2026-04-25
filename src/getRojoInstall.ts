@@ -1,6 +1,6 @@
 import * as childProcess from "child_process"
 import { promisify } from "util"
-import * as which from "which"
+import which from "which"
 import { ProjectFile } from "./findProjectFiles"
 import { result } from "./result"
 import path = require("path")

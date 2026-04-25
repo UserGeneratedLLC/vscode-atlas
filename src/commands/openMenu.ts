@@ -20,7 +20,7 @@ import {
   isExternalProject,
 } from "../projectDisplay"
 import { getConfigSetting, ThreeStateOption } from "../configuration"
-import which = require("which")
+import which from "which"
 
 function runAtlasCommand(
   args: string[],
@@ -687,7 +687,9 @@ export const openMenuCommand = (state: State) =>
             async (progress) => {
               let updateOutput: string
               try {
-                const r = await exec("npm update -g @usergeneratedllc/atlas")
+                const r = await exec(
+                  "npm install -g @usergeneratedllc/atlas@latest --no-audit --no-fund",
+                )
                 updateOutput = r.stdout || r.stderr
               } catch (e: any) {
                 vscode.window.showErrorMessage(
